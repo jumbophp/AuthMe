@@ -1,5 +1,12 @@
 {
-  "gui.authme.button.multiplayer": "Auth",
+  "gui.authme.multiplayer.button.auth": "Auth",
+  "gui.authme.auth.title": "Authentication",
+  "gui.authme.auth.field.username": "Username",
+  "gui.authme.auth.field.username.title": "Username",
+  "gui.authme.auth.field.password": "Password",
+  "gui.authme.auth.field.password.title": "Password",
+  "gui.authme.auth.button.login": "Login",
+  "gui.authme.auth.button.cancel": "Cancel",
   "gui.authme.status.validated": "\u2714",
   "gui.authme.status.invalidated": "\u2718"
 }

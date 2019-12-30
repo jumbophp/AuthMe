@@ -22,6 +22,7 @@ public class GuiMultiplayer
     public static void onGuiPostInit(GuiScreenEvent.InitGuiEvent.Post event)
     {
         if (!(event.getGui() instanceof MultiplayerScreen)) return;
+        final MultiplayerScreen screen = (MultiplayerScreen) event.getGui();
 
         AuthMe.LOGGER.debug("Injecting authentication widgets into multiplayer screen");
 
@@ -36,7 +37,7 @@ public class GuiMultiplayer
                                         new ResourceLocation("minecraft:textures/gui/widgets.png"),
                                         256,
                                         256,
-                                        button -> status = status == Status.OFFLINE ? Status.ONLINE : Status.OFFLINE,
+                                        button -> screen.getMinecraft().displayGuiScreen(new GuiAuth(screen)),
                                         I18n.format("gui.authme.button.multiplayer")));
     }
 
