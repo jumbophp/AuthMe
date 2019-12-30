@@ -1,9 +1,14 @@
 package me.axieum.mcmod.authme.gui;
 
+import com.mojang.authlib.exceptions.AuthenticationException;
 import me.axieum.mcmod.authme.AuthMe;
+import me.axieum.mcmod.authme.util.SessionUtil;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 
@@ -13,6 +18,7 @@ public class GuiAuth extends Screen
 
     private TextFieldWidget usernameField, passwordField;
     private GuiButtonExt loginButton, cancelButton;
+    private ITextComponent message;
 
     public GuiAuth(Screen parentScreen)
     {
@@ -54,9 +60,7 @@ public class GuiAuth extends Screen
                                        200,
                                        20,
                                        I18n.format("gui.authme.auth.button.login"),
-                                       button -> {
-                                           AuthMe.LOGGER.debug("Logging in...");
-                                       });
+                                       button -> this.submit());
         this.addButton(loginButton);
 
         // Cancel Button
@@ -96,6 +100,10 @@ public class GuiAuth extends Screen
         this.renderBackground();
 
         this.drawCenteredString(this.font, this.title.getFormattedText(), this.width / 2, 17, 16777215);
+
+        if (this.message != null)
+            this.drawCenteredString(this.font, this.message.getFormattedText(), this.width / 2, 34, 16777215);
+
         this.drawString(this.font,
                         I18n.format("gui.authme.auth.field.username.title"),
                         this.width / 2 - 100,
@@ -125,5 +133,30 @@ public class GuiAuth extends Screen
 
         // Enable/disable the login button if the form is valid
         this.loginButton.active = !this.passwordField.getText().isEmpty();
+    }
+
+    /**
+     * Submits the current form.
+     */
+    public void submit()
+    {
+        if (!this.loginButton.active)
+            return;
+
+        try {
+            SessionUtil.login(usernameField.getText(), passwordField.getText());
+            this.message = new TranslationTextComponent(
+                    "gui.authme.auth.message.success")
+                    .setStyle(new Style().setBold(true)
+                                         .setColor(TextFormatting.GREEN));
+            AuthMe.LOGGER.warn("Logged into '{}' Minecraft account", SessionUtil.getSession().getUsername());
+        } catch (AuthenticationException | IllegalAccessException e) {
+            this.message = new TranslationTextComponent(
+                    "gui.authme.auth.message.failure")
+                    .setStyle(new Style().setBold(true)
+                                         .setColor(TextFormatting.RED));
+
+            AuthMe.LOGGER.warn("Unable to login to session: {}", e.getMessage());
+        }
     }
 }

@@ -1,6 +1,8 @@
 {
   "gui.authme.multiplayer.button.auth": "Auth",
   "gui.authme.auth.title": "Authentication",
+  "gui.authme.auth.message.success": "Successfully logged in.",
+  "gui.authme.auth.message.failure": "Something went wrong!",
   "gui.authme.auth.field.username": "Username",
   "gui.authme.auth.field.username.title": "Username",
   "gui.authme.auth.field.password": "Password",

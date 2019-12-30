@@ -6,10 +6,12 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
+import com.mojang.util.UUIDTypeAdapter;
 import me.axieum.mcmod.authme.AuthMe;
 import me.axieum.mcmod.authme.api.Status;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Session;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import java.util.UUID;
 
@@ -72,5 +74,48 @@ public class SessionUtil
 
         lastStatusCheck = System.currentTimeMillis();
         return lastStatus;
+    }
+
+    /**
+     * Attempts to login and set a new session for the current Minecraft instance.
+     *
+     * @param username Minecraft account username
+     * @param password Minecraft account password
+     * @throws AuthenticationException unable to communicate with authentication services
+     * @throws IllegalAccessException  unable to replace current session on the Minecraft instance
+     */
+    public static void login(String username, String password) throws AuthenticationException, IllegalAccessException
+    {
+        // Set credentials and login
+        yua.setUsername(username);
+        yua.setPassword(password);
+        yua.logIn();
+
+        // Fetch useful session data
+        final String name = yua.getSelectedProfile().getName();
+        final String uuid = UUIDTypeAdapter.fromUUID(yua.getSelectedProfile().getId());
+        final String token = yua.getAuthenticatedToken();
+        final String type = yua.getUserType().getName();
+
+        // Logout after fetching what is needed
+        yua.logOut();
+
+        // Persist the new session to the Minecraft instance
+        setSession(new Session(name, uuid, token, type));
+
+        AuthMe.LOGGER.info("Session login successful.");
+    }
+
+    /**
+     * Replaces the session on the Minecraft instance.
+     *
+     * @param session new session with updated properties
+     */
+    private static void setSession(Session session) throws IllegalAccessException
+    {
+        // NB: Minecraft#session is a final property - use reflection
+        ObfuscationReflectionHelper.findField(Minecraft.class, "session")
+                                   .set(Minecraft.getInstance(), session);
+        lastStatusCheck = 0; // check again
     }
 }
