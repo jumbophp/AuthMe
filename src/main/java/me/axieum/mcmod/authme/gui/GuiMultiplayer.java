@@ -3,6 +3,7 @@ package me.axieum.mcmod.authme.gui;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import me.axieum.mcmod.authme.AuthMe;
 import me.axieum.mcmod.authme.api.Status;
+import me.axieum.mcmod.authme.util.SessionUtil;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.MultiplayerScreen;
 import net.minecraft.client.gui.widget.button.ImageButton;
@@ -16,8 +17,6 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class GuiMultiplayer
 {
-    static Status status = Status.OFFLINE;
-
     @SubscribeEvent
     public static void onGuiPostInit(GuiScreenEvent.InitGuiEvent.Post event)
     {
@@ -48,6 +47,8 @@ public class GuiMultiplayer
 
         final MultiplayerScreen screen = (MultiplayerScreen) event.getGui();
         final FontRenderer fontRenderer = screen.getMinecraft().fontRenderer;
+
+        final Status status = SessionUtil.getStatus();
 
         // Draw status text/icon on button
         screen.drawString(fontRenderer, ChatFormatting.BOLD + status.toString(), 20, 5, status.color);
