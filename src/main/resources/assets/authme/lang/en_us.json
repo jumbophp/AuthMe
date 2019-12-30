@@ -1,0 +1,5 @@
+{
+  "gui.authme.button.multiplayer": "Auth",
+  "gui.authme.status.validated": "\u2714",
+  "gui.authme.status.invalidated": "\u2718"
+}
