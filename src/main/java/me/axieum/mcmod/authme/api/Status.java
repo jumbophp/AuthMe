@@ -4,9 +4,9 @@ import net.minecraft.client.resources.I18n;
 
 public enum Status
 {
-    VALID("gui.authme.status.validated", 0xFF00FF00),
-    INVALID("gui.authme.status.invalidated", 0xFFFF0000),
-    UNKNOWN("gui.authme.status.unknown", 0xFFFF0000);
+    VALID("gui.authme.status.valid", 0xFF00FF00),
+    INVALID("gui.authme.status.invalid", 0xFFFF0000),
+    UNKNOWN("gui.authme.status.unknown", 0xFF999999);
 
     public final String langKey;
     public final int color;

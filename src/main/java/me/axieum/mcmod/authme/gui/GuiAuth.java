@@ -1,15 +1,13 @@
 package me.axieum.mcmod.authme.gui;
 
-import com.mojang.authlib.exceptions.AuthenticationException;
-import me.axieum.mcmod.authme.AuthMe;
+import com.mojang.authlib.exceptions.InvalidCredentialsException;
+import me.axieum.mcmod.authme.gui.widget.PasswordFieldWidget;
 import me.axieum.mcmod.authme.util.SessionUtil;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.Session;
+import net.minecraft.util.text.*;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 
 public class GuiAuth extends Screen
@@ -18,145 +16,206 @@ public class GuiAuth extends Screen
 
     private TextFieldWidget usernameField, passwordField;
     private GuiButtonExt loginButton, cancelButton;
-    private ITextComponent message;
+    private ITextComponent greeting, message;
+    private String lastUsername;
 
     public GuiAuth(Screen parentScreen)
     {
         super(new TranslationTextComponent("gui.authme.auth.title"));
         this.parentScreen = parentScreen;
-        this.minecraft = parentScreen.getMinecraft();
+        minecraft = parentScreen.getMinecraft();
+        lastUsername = SessionUtil.getSession().getUsername();
+        greeting = getGreeting(lastUsername);
     }
 
     @Override
     protected void init()
     {
         super.init();
-        this.getMinecraft().keyboardListener.enableRepeatEvents(true);
+        getMinecraft().keyboardListener.enableRepeatEvents(true);
 
         // Username Text Field
-        usernameField = new TextFieldWidget(this.font,
-                                            this.width / 2 - 100,
-                                            66,
+        usernameField = new TextFieldWidget(font,
+                                            width / 2 - 100,
+                                            76,
                                             200,
                                             20,
                                             I18n.format("gui.authme.auth.field.username"));
-        usernameField.func_212954_a(value -> this.updateFormState());
-        this.children.add(usernameField);
+        usernameField.setMaxStringLength(128);
+        usernameField.setSuggestion(lastUsername); // Suggest their current username
+        usernameField.func_212954_a(value -> {
+            // Clear username suggestion if they're typing something else
+            usernameField.setSuggestion(value.isEmpty() ? lastUsername : "");
+            // Update the login button submission state
+            loginButton.active = canSubmit();
+        });
+        children.add(usernameField);
 
         // Password Text Field
-        passwordField = new TextFieldWidget(this.font,
-                                            this.width / 2 - 100,
-                                            106,
-                                            200,
-                                            20,
-                                            I18n.format("gui.authme.auth.field.password"));
-        passwordField.func_212954_a(value -> this.updateFormState());
+        passwordField = new PasswordFieldWidget(font,
+                                                width / 2 - 100,
+                                                116,
+                                                200,
+                                                20,
+                                                I18n.format("gui.authme.auth.field.password"));
         passwordField.setFocused2(true); // Focus password initially (as we've already suggested a username)
-        this.children.add(passwordField);
+        passwordField.func_212954_a(value -> {
+            // Tweak the login button depending if password is given or not
+            loginButton.setMessage(I18n.format("gui.authme.auth.button.login."
+                                               + (value.isEmpty() ? "offline" : "online")));
+            loginButton.active = canSubmit();
+        });
+        children.add(passwordField);
 
         // Login Button
-        loginButton = new GuiButtonExt(this.width / 2 - 100,
-                                       this.height / 4 + 96 + 18,
+        loginButton = new GuiButtonExt(width / 2 - 100,
+                                       height / 4 + 96 + 18,
                                        200,
                                        20,
-                                       I18n.format("gui.authme.auth.button.login"),
-                                       button -> this.submit());
-        this.addButton(loginButton);
+                                       I18n.format("gui.authme.auth.button.login.offline"),
+                                       button -> submit());
+        loginButton.active = false;
+        addButton(loginButton);
 
         // Cancel Button
-        cancelButton = new GuiButtonExt(this.width / 2 - 100,
-                                        this.height / 4 + 120 + 18,
+        cancelButton = new GuiButtonExt(width / 2 - 100,
+                                        height / 4 + 120 + 18,
                                         200,
                                         20,
                                         I18n.format("gui.authme.auth.button.cancel"),
-                                        button -> this.onClose());
-        this.addButton(cancelButton);
-
-        this.updateFormState();
+                                        button -> onClose());
+        addButton(cancelButton);
     }
 
     @Override
     public boolean shouldCloseOnEsc()
     {
-        return !this.usernameField.isFocused() && !this.passwordField.isFocused();
+        return !usernameField.isFocused() && !passwordField.isFocused();
     }
 
     @Override
     public void onClose()
     {
-        this.passwordField.setText("");
-        this.getMinecraft().displayGuiScreen(parentScreen);
+        passwordField.setText("");
+        getMinecraft().displayGuiScreen(parentScreen);
     }
 
     @Override
     public void removed()
     {
-        this.getMinecraft().keyboardListener.enableRepeatEvents(false);
+        getMinecraft().keyboardListener.enableRepeatEvents(false);
     }
 
     @Override
     public void render(int p_render_1_, int p_render_2_, float p_render_3_)
     {
-        this.renderBackground();
+        renderBackground();
 
-        this.drawCenteredString(this.font, this.title.getFormattedText(), this.width / 2, 17, 16777215);
+        drawCenteredString(font, title.getFormattedText(), width / 2, 17, 16777215);
+        drawCenteredString(font, greeting.getFormattedText(), width / 2, 34, 16777215);
 
-        if (this.message != null)
-            this.drawCenteredString(this.font, this.message.getFormattedText(), this.width / 2, 34, 16777215);
+        if (message != null)
+            drawCenteredString(font, message.getFormattedText(), width / 2, height / 4 + 86, 16777215);
 
-        this.drawString(this.font,
-                        I18n.format("gui.authme.auth.field.username.title"),
-                        this.width / 2 - 100,
-                        53,
-                        10526880);
-        this.drawString(this.font,
-                        I18n.format("gui.authme.auth.field.password.title"),
-                        this.width / 2 - 100,
-                        94,
-                        10526880);
+        drawString(font, I18n.format("gui.authme.auth.field.username"), width / 2 - 100, 64, 10526880);
+        drawString(font, I18n.format("gui.authme.auth.field.password"), width / 2 - 100, 104, 10526880);
 
-        this.usernameField.render(p_render_1_, p_render_2_, p_render_3_);
-        this.passwordField.render(p_render_1_, p_render_2_, p_render_3_);
+        usernameField.render(p_render_1_, p_render_2_, p_render_3_);
+        passwordField.render(p_render_1_, p_render_2_, p_render_3_);
 
         super.render(p_render_1_, p_render_2_, p_render_3_);
     }
 
     /**
-     * Handle updating the authentication form state. This handles submit
-     * button enabling/disabling.
+     * Sets the flash status message.
+     *
+     * @param message text component to show
      */
-    public void updateFormState()
+    public void setMessage(ITextComponent message)
     {
-        // Clear username suggestion if they're typing something else
-        this.usernameField.setSuggestion(
-                this.usernameField.getText().isEmpty() ? this.getMinecraft().getSession().getUsername() : "");
-
-        // Enable/disable the login button if the form is valid
-        this.loginButton.active = !this.passwordField.getText().isEmpty();
+        this.message = message;
     }
 
     /**
-     * Submits the current form.
+     * Determines if the current form can be submitted.
+     *
+     * @return true if the form is ready for submission
+     */
+    protected boolean canSubmit()
+    {
+        return !usernameField.getText().isEmpty() || !passwordField.getText().isEmpty();
+    }
+
+    /**
+     * Submits the current form, logging the credentials in.
      */
     public void submit()
     {
-        if (!this.loginButton.active)
-            return;
+        // Prevent pre-mature submissions
+        if (!loginButton.active) return;
+        loginButton.active = false; // disable login button while logging in
 
-        try {
-            SessionUtil.login(usernameField.getText(), passwordField.getText());
-            this.message = new TranslationTextComponent(
-                    "gui.authme.auth.message.success")
-                    .setStyle(new Style().setBold(true)
-                                         .setColor(TextFormatting.GREEN));
-            AuthMe.LOGGER.warn("Logged into '{}' Minecraft account", SessionUtil.getSession().getUsername());
-        } catch (AuthenticationException | IllegalAccessException e) {
-            this.message = new TranslationTextComponent(
-                    "gui.authme.auth.message.failure")
-                    .setStyle(new Style().setBold(true)
-                                         .setColor(TextFormatting.RED));
+        final String username = usernameField.getText().isEmpty() ? lastUsername : usernameField.getText();
+        final String password = passwordField.getText();
 
-            AuthMe.LOGGER.warn("Unable to login to session: {}", e.getMessage());
+        if (password.isEmpty()) {
+            // Play offline
+            Session offlineSession = SessionUtil.login(username);
+
+            lastUsername = offlineSession.getUsername();
+            greeting = getGreeting(lastUsername);
+            message = new TranslationTextComponent("gui.authme.auth.message.success.offline")
+                    .setStyle(new Style().setBold(true).setColor(TextFormatting.AQUA));
+
+            // Reset form
+            usernameField.setText("");
+            passwordField.setText("");
+        } else {
+            // Login
+            SessionUtil.login(username, password)
+                       .thenAccept(session -> {
+                           // Successful login attempt
+                           lastUsername = session.getUsername();
+                           greeting = getGreeting(lastUsername);
+
+                           // Set the message contents and style it as successful
+                           message = new TranslationTextComponent("gui.authme.auth.message.success")
+                                   .setStyle(new Style().setBold(true).setColor(TextFormatting.GREEN));
+
+                           // Reset form
+                           usernameField.setText("");
+                           passwordField.setText("");
+                       })
+                       .exceptionally(e -> {
+                           // Failed login attempt
+                           loginButton.active = true; // re-enable login button to try again with same credentials
+
+                           // Set the message contents and style it as an error
+                           if (e.getCause() instanceof InvalidCredentialsException)
+                               message
+                                       = new TranslationTextComponent("gui.authme.auth.message.failed.credentials");
+                           else
+                               message = new TranslationTextComponent("gui.authme.auth.message.failed.generic",
+                                                                      e.getCause().getMessage());
+
+                           message.setStyle(new Style().setBold(true).setColor(TextFormatting.RED));
+
+                           return null;
+                       });
         }
+    }
+
+    /**
+     * Formats and returns a greeting text component.
+     *
+     * @param username username in greeting
+     * @return formatted translatable text component greeting
+     */
+    protected ITextComponent getGreeting(String username)
+    {
+        return new TranslationTextComponent("gui.authme.auth.greeting",
+                                            new StringTextComponent(username)
+                                                    .setStyle(new Style().setColor(TextFormatting.YELLOW)))
+                .setStyle(new Style().setColor(TextFormatting.GRAY));
     }
 }

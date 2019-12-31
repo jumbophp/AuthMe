@@ -17,15 +17,16 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class GuiMultiplayer
 {
+    private static Status status = Status.UNKNOWN;
+
     @SubscribeEvent
     public static void onGuiPostInit(GuiScreenEvent.InitGuiEvent.Post event)
     {
         if (!(event.getGui() instanceof MultiplayerScreen)) return;
         final MultiplayerScreen screen = (MultiplayerScreen) event.getGui();
 
-        AuthMe.LOGGER.debug("Injecting authentication widgets into multiplayer screen");
-
         // Inject authenticate button at top left, using lock texture or fallback text
+        AuthMe.LOGGER.debug("Injecting authentication button into multiplayer screen");
         event.addWidget(new ImageButton(6,
                                         6,
                                         20,
@@ -37,7 +38,11 @@ public class GuiMultiplayer
                                         256,
                                         256,
                                         button -> screen.getMinecraft().displayGuiScreen(new GuiAuth(screen)),
-                                        I18n.format("gui.authme.button.multiplayer")));
+                                        I18n.format("gui.authme.multiplayer.button.auth")));
+
+        // Fetch current session status
+        GuiMultiplayer.status = Status.UNKNOWN;
+        SessionUtil.getStatus().thenAccept(status -> GuiMultiplayer.status = status);
     }
 
     @SubscribeEvent
@@ -47,8 +52,6 @@ public class GuiMultiplayer
 
         final MultiplayerScreen screen = (MultiplayerScreen) event.getGui();
         final FontRenderer fontRenderer = screen.getMinecraft().fontRenderer;
-
-        final Status status = SessionUtil.getStatus();
 
         // Draw status text/icon on button
         screen.drawString(fontRenderer, ChatFormatting.BOLD + status.toString(), 20, 5, status.color);
