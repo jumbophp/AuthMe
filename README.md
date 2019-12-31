@@ -1,5 +1,5 @@
 # AuthMe
-> Authenticate yourself in Minecraft
+> Authenticate yourself in Minecraft and re-validate your session
 
 ### What does it do?
 

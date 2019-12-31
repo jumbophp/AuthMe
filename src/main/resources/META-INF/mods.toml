@@ -1,16 +1,17 @@
 modLoader="javafml"
 loaderVersion="[28,)"
 issueTrackerURL="https://github.com/Axieum/AuthMe/issues"
-displayURL="https://github.com/Axieum/AuthMe"
-#logoFile="logo.png"
-authors="Axieum"
+logoFile="logo.png"
 
 [[mods]]
 modId="authme"
 version="${file.jarVersion}"
 displayName="Auth Me"
+displayURL="https://github.com/Axieum/AuthMe"
+authors="Axieum"
+credits="TechnicianLP"
 description='''
-Authenticate yourself.
+Authenticate yourself in Minecraft and re-validate your session.
 '''
 
 [[dependencies.authme]]
