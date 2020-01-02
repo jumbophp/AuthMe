@@ -1,29 +1,22 @@
 modLoader="javafml"
 loaderVersion="[28,)"
 issueTrackerURL="https://github.com/Axieum/AuthMe/issues"
-logoFile="logo.png"
 
 [[mods]]
 modId="authme"
 version="${file.jarVersion}"
 displayName="Auth Me"
 displayURL="https://github.com/Axieum/AuthMe"
-authors="Axieum"
+logoFile="logo.png"
 credits="TechnicianLP"
+authors="Axieum"
 description='''
 Authenticate yourself in Minecraft and re-validate your session.
 '''
 
 [[dependencies.authme]]
-    modId="forge"
-    mandatory=true
-    versionRange="[28,)"
-    ordering="NONE"
-    side="CLIENT"
-
-[[dependencies.authme]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.14.4]"
+    versionRange="[1.14,1.16)"
     ordering="NONE"
     side="CLIENT"
