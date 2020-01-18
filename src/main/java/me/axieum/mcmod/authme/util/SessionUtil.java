@@ -49,7 +49,8 @@ public class SessionUtil
     /**
      * Checks and returns a completable future for the current session status.
      * NB: This is an expensive task as it involves connecting to servers to
-     * validate the stored tokens. The response is cached for ~1 minutes.
+     * validate the stored tokens, and hence is executed on a separate thread.
+     * The response is cached for ~1 minutes.
      *
      * @return completable future for the status (async)
      */
@@ -74,7 +75,7 @@ public class SessionUtil
                     lastStatus = Status.INVALID;
                 }
             } catch (AuthenticationException e) {
-                AuthMe.LOGGER.error("Unable to validate session: {}", e.getMessage());
+                AuthMe.LOGGER.warn("Unable to validate the session: {}", e.getMessage());
                 lastStatus = Status.INVALID;
             }
 
@@ -94,7 +95,7 @@ public class SessionUtil
     {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                AuthMe.LOGGER.info("Logging into new session with username '{}'", username);
+                AuthMe.LOGGER.info("Logging into a new session with username '{}'", username);
 
                 // Set credentials and login
                 yua.setUsername(username);
@@ -112,12 +113,13 @@ public class SessionUtil
 
                 // Persist the new session to the Minecraft instance
                 final Session session = new Session(name, uuid, token, type);
+                session.setProperties(yua.getUserProperties());
                 setSession(session);
 
                 AuthMe.LOGGER.info("Session login successful.");
                 return session;
             } catch (AuthenticationException | IllegalAccessException e) {
-                AuthMe.LOGGER.warn("Session login failed: {}", e.getMessage());
+                AuthMe.LOGGER.error("Session login failed: {}", e.getMessage());
                 throw new CompletionException(e);
             }
         });
@@ -136,10 +138,10 @@ public class SessionUtil
         try {
             UUID uuid = UUID.nameUUIDFromBytes(("offline:" + username).getBytes());
 
-            final Session session = new Session(username, uuid.toString(), "invalidtoken", "legacy");
+            final Session session = new Session(username, uuid.toString(), "invalidtoken", Session.Type.LEGACY.name());
             setSession(session);
 
-            AuthMe.LOGGER.error("Session login (offline) successful.");
+            AuthMe.LOGGER.info("Session login (offline) successful.");
             return session;
         } catch (IllegalAccessException e) {
             AuthMe.LOGGER.error("Session login (offline) failed: {}", e.getMessage());

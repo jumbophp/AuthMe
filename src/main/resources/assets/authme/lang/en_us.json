@@ -11,6 +11,7 @@
   "gui.authme.auth.message.success.offline": "Successfully playing offline!",
   "gui.authme.auth.title": "Authentication",
   "gui.authme.multiplayer.button.auth": "Authenticate",
+  "gui.authme.disconnect.button.auth": "Re-authenticate",
   "gui.authme.status.invalid": "\u2717",
   "gui.authme.status.unknown": "\u2026",
   "gui.authme.status.valid": "\u2714"
