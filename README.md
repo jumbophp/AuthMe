@@ -1,3 +1,7 @@
+<p align="center">
+    <a href="https://github.com/Axieum/AuthMe"><img src="src/main/resources/logo.png" alt="AuthMe Logo"></a>
+</p>
+
 # AuthMe
 > Authenticate yourself in Minecraft and re-validate your session
 
