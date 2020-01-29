@@ -5,13 +5,13 @@ import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.MainMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
@@ -36,12 +36,12 @@ public class GuiDisconnected
 
         // Inject the authentication button where the back button was
         AuthMe.LOGGER.debug("Injecting authentication button into disconnection screen");
-        event.addWidget(new GuiButtonExt(backButton.x,
-                                         backButton.y,
-                                         backButton.getWidth(),
-                                         backButton.getHeight(),
-                                         I18n.format("gui.authme.disconnect.button.auth"),
-                                         button -> screen.getMinecraft().displayGuiScreen(new GuiAuth(prevScreen))));
+        event.addWidget(new Button(backButton.x,
+                                   backButton.y,
+                                   backButton.getWidth(),
+                                   backButton.getHeight(),
+                                   I18n.format("gui.authme.disconnect.button.auth"),
+                                   button -> screen.getMinecraft().displayGuiScreen(new GuiAuth(prevScreen))));
 
         // Move back button below
         backButton.y += 26;

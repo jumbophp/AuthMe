@@ -5,17 +5,17 @@ import me.axieum.mcmod.authme.gui.widget.PasswordFieldWidget;
 import me.axieum.mcmod.authme.util.SessionUtil;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Session;
 import net.minecraft.util.text.*;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
 
 public class GuiAuth extends Screen
 {
     private final Screen parentScreen;
 
     private TextFieldWidget usernameField, passwordField;
-    private GuiButtonExt loginButton, cancelButton;
+    private Button loginButton, cancelButton;
     private ITextComponent greeting, message;
     private String lastUsername;
 
@@ -68,22 +68,22 @@ public class GuiAuth extends Screen
         children.add(passwordField);
 
         // Login Button
-        loginButton = new GuiButtonExt(width / 2 - 100,
-                                       height / 4 + 96 + 18,
-                                       200,
-                                       20,
-                                       I18n.format("gui.authme.auth.button.login.offline"),
-                                       button -> submit());
+        loginButton = new Button(width / 2 - 100,
+                                 height / 4 + 96 + 18,
+                                 200,
+                                 20,
+                                 I18n.format("gui.authme.auth.button.login.offline"),
+                                 button -> submit());
         loginButton.active = false;
         addButton(loginButton);
 
         // Cancel Button
-        cancelButton = new GuiButtonExt(width / 2 - 100,
-                                        height / 4 + 120 + 18,
-                                        200,
-                                        20,
-                                        I18n.format("gui.authme.auth.button.cancel"),
-                                        button -> onClose());
+        cancelButton = new Button(width / 2 - 100,
+                                  height / 4 + 120 + 18,
+                                  200,
+                                  20,
+                                  I18n.format("gui.authme.auth.button.cancel"),
+                                  button -> onClose());
         addButton(cancelButton);
     }
 
